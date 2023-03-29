@@ -29,17 +29,25 @@ namespace P230_Pronia.Areas.ProniaAdmin.Controllers
         [HttpPost]
         [ActionName("Create")]
         [AutoValidateAntiforgeryToken]
-        public IActionResult Creates(Category newCategory)
+        public IActionResult Create(Category newCategory)
         {
-            _context.Categories.Add(newCategory);
-            _context.SaveChanges();
-
             if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("Name", "You cannot duplicate category name");
-                return View();
+                var existingCategory = _context.Categories.FirstOrDefault(c => c.Name == newCategory.Name);
+                if (existingCategory == null)
+                {
+                    _context.Categories.Add(newCategory);
+                    _context.SaveChanges();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("Name", "You cannot duplicate category name" +
+                        "Name" );
+                }
+                 
             }
-            return RedirectToAction(nameof(Index));
+            return View(newCategory);
         }
 
         public IActionResult Edit(int id)
